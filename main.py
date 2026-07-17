@@ -18,6 +18,7 @@ CHUNK_SIZE = 65536
 
 
 def pwrite(wf: TextIOWrapper, string: str) -> None:
+    print(string)
     wf.write(string + "\n")
 
 
@@ -137,43 +138,6 @@ def compare_folders():
                         "b_sha256": file_b["sha256"],
                     }
                 )
-
-    # ================= OUTPUT RESULTS =================
-    print("\n" + "=" * 50)
-    print(" COMPARISON SUMMARY")
-    print("=" * 50)
-    print(f"Identical Files: {len(identical)}")
-    print(f"Mismatched Files (Modified): {len(mismatched)}")
-    print(f"Only in Folder A: {len(only_in_a)}")
-    print(f"Only in Folder B: {len(only_in_b)}")
-    if errors:
-        print(f"Files with Read Errors: {len(errors)}")
-
-    if mismatched:
-        print("\n--- MISMATCHED FILES (Contents differ) ---")
-        for item in mismatched:
-            print(f"\nFile: {item['path']}")
-            print(
-                f"  Folder A | MD5: {item['a_md5'][:8]}... | SHA256: {item['a_sha256'][:8]}..."
-            )
-            print(
-                f"  Folder B | MD5: {item['b_md5'][:8]}... | SHA256: {item['b_sha256'][:8]}..."
-            )
-
-    if only_in_a:
-        print("\n--- ONLY IN FOLDER A ---")
-        for f in only_in_a:
-            print(f"  + {f}")
-
-    if only_in_b:
-        print("\n--- ONLY IN FOLDER B ---")
-        for f in only_in_b:
-            print(f"  + {f}")
-
-    if errors:
-        print("\n--- ERRORS ENCOUNTERED ---")
-        for path, err in errors:
-            print(f"  Error reading {path}: {err}")
 
     # ================= OUTPUT SAVE =================
     with open(file="./results.txt", mode="w", encoding="utf-8") as wf:
