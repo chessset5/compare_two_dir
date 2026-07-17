@@ -12,3 +12,4 @@ wheels/
 
 #ide
 .vscode/
+results.txt

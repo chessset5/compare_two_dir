@@ -1,3 +1,4 @@
+from io import TextIOWrapper
 import os
 import hashlib
 from concurrent.futures import ThreadPoolExecutor
@@ -8,12 +9,16 @@ ENV_V: dict[str, str] = {
     k: v if v else "" for k, v in dotenv_values("./folders.env").items()
 }
 
-FOLDER_A: str = ENV_V["folder1"]
-FOLDER_B: str = ENV_V["folder2"]
+FOLDER_A: str = ENV_V["folder_a"]
+FOLDER_B: str = ENV_V["folder_b"]
 
 # Size of chunks read into memory (64KB is optimal for most disks)
 CHUNK_SIZE = 65536
 # ========================================================
+
+
+def pwrite(wf: TextIOWrapper, string: str) -> None:
+    wf.write(string + "\n")
 
 
 def compute_checksums(file_path) -> dict[str, str]:
@@ -169,6 +174,46 @@ def compare_folders():
         print("\n--- ERRORS ENCOUNTERED ---")
         for path, err in errors:
             print(f"  Error reading {path}: {err}")
+
+    # ================= OUTPUT SAVE =================
+    with open(file="./results.txt", mode="w", encoding="utf-8") as wf:
+        pwrite(wf, "\n" + "=" * 50)
+        pwrite(wf, " COMPARISON SUMMARY")
+        pwrite(wf, "=" * 50)
+        pwrite(wf, f"Identical Files: {len(identical)}")
+        pwrite(wf, f"Mismatched Files (Modified): {len(mismatched)}")
+        pwrite(wf, f"Only in Folder A: {len(only_in_a)}")
+        pwrite(wf, f"Only in Folder B: {len(only_in_b)}")
+        if errors:
+            pwrite(wf, f"Files with Read Errors: {len(errors)}")
+
+        if mismatched:
+            pwrite(wf, "\n--- MISMATCHED FILES (Contents differ) ---")
+            for item in mismatched:
+                pwrite(wf, f"\nFile: {item['path']}")
+                pwrite(
+                    wf,
+                    f"  Folder A | MD5: {item['a_md5'][:8]}... | SHA256: {item['a_sha256'][:8]}...",
+                )
+                pwrite(
+                    wf,
+                    f"  Folder B | MD5: {item['b_md5'][:8]}... | SHA256: {item['b_sha256'][:8]}...",
+                )
+
+        if only_in_a:
+            pwrite(wf, "\n--- ONLY IN FOLDER A ---")
+            for f in only_in_a:
+                pwrite(wf, f"  + {f}")
+
+        if only_in_b:
+            pwrite(wf, "\n--- ONLY IN FOLDER B ---")
+            for f in only_in_b:
+                pwrite(wf, f"  + {f}")
+
+        if errors:
+            pwrite(wf, "\n--- ERRORS ENCOUNTERED ---")
+            for path, err in errors:
+                pwrite(wf, f"  Error reading {path}: {err}")
 
 
 if __name__ == "__main__":
