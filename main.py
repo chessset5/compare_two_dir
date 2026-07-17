@@ -139,6 +139,11 @@ def compare_folders():
                     }
                 )
 
+    only_in_a.sort()
+    only_in_b.sort()
+    mismatched.sort(key=lambda x: x["path"])
+    errors.sort()
+
     # ================= OUTPUT SAVE =================
     with open(file="./results.txt", mode="w", encoding="utf-8") as wf:
         pwrite(wf, "\n" + "=" * 50)
